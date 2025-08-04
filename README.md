@@ -42,13 +42,14 @@ pub struct MyInstruction<'info> {
     bump
 )]
 pub vault: Account<'info, Vault>,
+``````
 
-
-🍝 Analogy
+### 🍝 Analogy
 Imagine you're a program chef making dishes for users. Instead of using random dish IDs, you use a recipe:
+```
 
 Dish ID = hash("pasta" + customer_public_key + program_id)
-``````
+```
 This ensures:
 
 The dish always goes to the right customer
