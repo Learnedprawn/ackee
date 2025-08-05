@@ -57,3 +57,6 @@ The dish always goes to the right customer
 Only you (the chef/program) can cook, modify, or serve the dish
 
 Customers can’t mess with your recipes — no rogue spaghetti
+
+
+## Mess around with Bumps and understand
