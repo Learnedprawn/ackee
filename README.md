@@ -58,5 +58,91 @@ Only you (the chef/program) can cook, modify, or serve the dish
 
 Customers can’t mess with your recipes — no rogue spaghetti
 
+# 📘 Understanding PDA Bumps in Solana Anchor
 
-## Mess around with Bumps and understand
+## 🔹 What is a **bump**?
+
+When you create a **Program Derived Address (PDA)** using:
+
+```rust
+Pubkey::find_program_address(seeds, program_id)
+```
+
+Solana automatically finds a **bump seed** (a `u8`) that, when added to your seeds, generates a valid PDA **off the ed25519 curve**. This ensures:
+
+* The address can't be owned by a private key.
+* It is safe for **programs** to sign with.
+
+### ✅ TL;DR:
+
+> A **bump** is a small number (`u8`) added to your seeds to make your PDA valid and secure.
+
+---
+
+## 🔹 Why does **Anchor** care about bumps?
+
+When doing **Cross-Program Invocations (CPIs)** using `with_signer`, you need to **recompute the PDA exactly**, including the bump.
+
+If you miss the bump, you’ll face errors like:
+
+```text
+Cross-program invocation with unauthorized signer or writable account.
+```
+
+Basically, without the correct bump, Anchor can’t "prove" it’s authorized to act as that PDA.
+
+---
+
+## 🔹 Where does `ctx.bumps.<name>` come from?
+
+In Anchor, when you define a PDA like this:
+
+```rust
+#[account(
+    mut,
+    seeds = [b"vault", vault_authority.key().as_ref()],
+    bump
+)]
+pub vault: Account<'info, Vault>,
+```
+
+Anchor:
+
+* Automatically calculates the bump.
+* Stores it in `ctx.bumps.vault` (because the account field is named `vault`).
+* You **don’t** need to call `find_program_address` manually.
+
+---
+
+## 🔹 Example usage of bump in `signer_seeds`
+
+When you want to sign something **as your PDA**, use the bump like so:
+
+```rust
+let signer_seeds = &[
+    b"vault",
+    ctx.accounts.vault_authority.key.as_ref(),
+    &[ctx.bumps.vault], // 👈 Bump goes here!
+];
+
+let signer = &[&signer_seeds[..]];
+```
+
+Then pass `signer` to any CPI or account instruction that needs to sign as the PDA.
+
+---
+
+## 🔹 Summary
+
+| Concept                      | Explanation                                    |
+| ---------------------------- | ---------------------------------------------- |
+| **Bump**                     | A `u8` used to create valid, non-signable PDAs |
+| **`ctx.bumps.<field_name>`** | Anchor auto-stores the bump for each PDA       |
+| **Why needed?**              | Required when signing CPIs using `with_signer` |
+
+---
+
+Anchor handles a lot under the hood — you just need to remember to use the bump when signing with PDAs!
+
+---
+
