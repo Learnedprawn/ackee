@@ -18,7 +18,7 @@ pub fn _vote(ctx: Context<VoteContext>, candidate: Pubkey) -> Result<()> {
         ctx.accounts.election.end_date > Clock::get()?.unix_timestamp,
         ElectionError::VotingAfterEndDate
     );
-    //TODO: After creating Candidate accounts increment candidate votes.
+    //TODO: After creating Candidate accounts increment (using checked_add) candidate votes.
     vote.voter = ctx.accounts.voter.key();
     vote.candidate = candidate;
     vote.election_fee = 0;
@@ -41,7 +41,7 @@ pub struct VoteContext<'info> {
         seeds = [b"vote", election.key().as_ref(), voter.key().as_ref(), candidate.key().as_ref()],
         //Choice
         //of making this one voter -> one vote per election OR one voter -> one vote per candidate
-        //election. I choose the later because traditional systems already do the first option.
+        //election. I choose the later because traditional systems already do the first option
         bump
 
     )]
