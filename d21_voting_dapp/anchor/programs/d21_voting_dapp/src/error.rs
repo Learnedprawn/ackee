@@ -10,4 +10,6 @@ pub enum ElectionError {
     StartDateInThePast,
     #[msg("End Date after Start Date")]
     EndDateAfterStart,
+    #[msg("End Date crossed")]
+    VotingAfterEndDate,
 }

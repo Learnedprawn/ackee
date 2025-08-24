@@ -15,3 +15,11 @@ pub struct Election {
     pub start_date: i64,
     pub end_date: i64,
 }
+#[account]
+#[derive(InitSpace)]
+pub struct Vote {
+    pub election: Pubkey,
+    pub candidate: Pubkey,
+    pub voter: Pubkey,
+    pub election_fee: u64,
+}

@@ -31,4 +31,7 @@ pub mod d21_voting_dapp {
             end_date,
         )
     }
+    pub fn vote(ctx: Context<VoteContext>, candidate: Pubkey) -> Result<()> {
+        _vote(ctx, candidate)
+    }
 }
