@@ -12,7 +12,7 @@ use instructions::*;
 pub mod d21_voting_dapp {
     use super::*;
 
-    pub fn initialize(
+    pub fn initialize_election(
         ctx: Context<InitializeContext>,
         election_name: String,
         election_description: String,
@@ -21,7 +21,7 @@ pub mod d21_voting_dapp {
         start_date: i64,
         end_date: i64,
     ) -> Result<()> {
-        _initialize(
+        _initialize_election(
             ctx,
             election_name,
             election_description,
@@ -33,5 +33,8 @@ pub mod d21_voting_dapp {
     }
     pub fn vote(ctx: Context<VoteContext>, candidate: Pubkey) -> Result<()> {
         _vote(ctx, candidate)
+    }
+    pub fn initialize_candidte(ctx: Context<VoteContext>) -> Result<()> {
+        _initialize_candidte(ctx)
     }
 }

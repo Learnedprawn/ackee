@@ -7,7 +7,7 @@ use crate::{
 
 pub const DISCRIMINANT: usize = 8;
 
-pub fn _initialize(
+pub fn _initialize_election(
     ctx: Context<InitializeContext>,
     election_name: String,
     election_description: String,
