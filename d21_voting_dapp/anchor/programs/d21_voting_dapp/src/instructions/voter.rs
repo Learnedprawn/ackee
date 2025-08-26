@@ -1,9 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{
-    error::ElectionError,
-    state::{Candidate, Election, Vote, Voter, MAX_NAME_LEN},
-};
+use crate::state::{Election, Voter};
 
 const DISCRIMINANT: usize = 8;
 

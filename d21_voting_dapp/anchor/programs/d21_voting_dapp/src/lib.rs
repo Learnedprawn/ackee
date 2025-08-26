@@ -36,10 +36,17 @@ pub mod d21_voting_dapp {
     pub fn vote(ctx: Context<VoteContext>, candidate: Pubkey) -> Result<()> {
         _vote(ctx, candidate)
     }
-    pub fn initialize_candidte(
+    pub fn initialize_candidate(
         ctx: Context<CandidateContext>,
         candidate_name: String,
     ) -> Result<()> {
         _initialize_candidate(ctx, candidate_name)
+    }
+    pub fn initialize_voter(
+        ctx: Context<VoterContext>,
+        election_id: u64,
+        voter_name: String,
+    ) -> Result<()> {
+        _initialize_voter(ctx, election_id, voter_name)
     }
 }
