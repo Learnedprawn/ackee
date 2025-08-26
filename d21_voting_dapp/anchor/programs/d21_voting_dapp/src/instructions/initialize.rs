@@ -8,7 +8,8 @@ use crate::{
 pub const DISCRIMINANT: usize = 8;
 
 pub fn _initialize_election(
-    ctx: Context<InitializeContext>,
+    ctx: Context<InitializeElectionContext>,
+    election_id: u64,
     election_name: String,
     election_description: String,
     election_fee: u64,
@@ -45,19 +46,21 @@ pub fn _initialize_election(
 
     election_account.election_organizer = ctx.accounts.election_organizer.key();
 
+    election_account.election_id = election_id;
+
     Ok(())
 }
 
 #[derive(Accounts)]
-#[instruction(name: String)]
-pub struct InitializeContext<'info> {
+#[instruction(election_id: u64)]
+pub struct InitializeElectionContext<'info> {
     #[account(mut)]
     pub election_organizer: Signer<'info>,
     #[account(
         init,
         payer = election_organizer,
         space = DISCRIMINANT + Election::INIT_SPACE,
-        seeds = [b"election", election_organizer.key().as_ref(),  name.as_bytes()],
+        seeds = [b"election", election_id.to_le_bytes().as_ref()],
         bump
     )]
     pub election: Account<'info, Election>,

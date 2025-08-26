@@ -13,7 +13,8 @@ pub mod d21_voting_dapp {
     use super::*;
 
     pub fn initialize_election(
-        ctx: Context<InitializeContext>,
+        ctx: Context<InitializeElectionContext>,
+        election_id: u64,
         election_name: String,
         election_description: String,
         election_fee: u64,
@@ -23,6 +24,7 @@ pub mod d21_voting_dapp {
     ) -> Result<()> {
         _initialize_election(
             ctx,
+            election_id,
             election_name,
             election_description,
             election_fee,

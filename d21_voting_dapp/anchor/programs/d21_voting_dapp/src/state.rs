@@ -6,6 +6,7 @@ pub const MAX_DESCRIPTION_LEN: usize = 100;
 #[account]
 #[derive(InitSpace)]
 pub struct Election {
+    pub election_id: u64,
     #[max_len(MAX_NAME_LEN)]
     pub election_name: String,
     #[max_len(MAX_DESCRIPTION_LEN)]
