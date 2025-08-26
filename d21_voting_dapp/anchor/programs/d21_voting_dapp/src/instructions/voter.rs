@@ -37,7 +37,7 @@ pub struct VoterContext<'info> {
         init,
         space = DISCRIMINANT + Voter::INIT_SPACE,
         payer = voter,
-        seeds = [b"voter", voter.key().as_ref()],
+        seeds = [b"voter", voter.key().as_ref(), election.key().as_ref()],
         bump
     )]
     pub voter_account: Account<'info, Voter>,
