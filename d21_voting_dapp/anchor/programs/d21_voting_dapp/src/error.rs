@@ -12,4 +12,6 @@ pub enum ElectionError {
     EndDateAfterStart,
     #[msg("End Date crossed")]
     VotingAfterEndDate,
+    #[msg("Can't register after end date")]
+    RegistrationAfterEndDate,
 }

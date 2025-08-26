@@ -23,3 +23,24 @@ pub struct Vote {
     pub voter: Pubkey,
     pub election_fee: u64,
 }
+
+#[account]
+#[derive(InitSpace)]
+pub struct Candidate {
+    pub election: Pubkey,
+    pub candidate: Pubkey,
+    #[max_len(MAX_NAME_LEN)]
+    pub name: String,
+    pub vote_count: i64,
+}
+
+#[account]
+#[derive(InitSpace)]
+pub struct Voter {
+    pub voter: Pubkey,
+    pub election: Pubkey,
+    #[max_len(MAX_NAME_LEN)]
+    pub name: String,
+    pub votes_given: i64,
+    pub negative_votes_given: i64,
+}

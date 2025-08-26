@@ -7,7 +7,7 @@ use crate::{
 
 const DISCRIMINANT: usize = 8;
 
-pub fn _vote(ctx: Context<VoteContext>, candidate: Pubkey) -> Result<()> {
+pub fn _initialize_voter(ctx: Context<VoterContext>, candidate: Pubkey) -> Result<()> {
     let vote = &mut ctx.accounts.vote;
 
     require!(
@@ -28,7 +28,7 @@ pub fn _vote(ctx: Context<VoteContext>, candidate: Pubkey) -> Result<()> {
 
 #[derive(Accounts)]
 #[instruction(candidate: Pubkey)]
-pub struct VoteContext<'info> {
+pub struct VoterContext<'info> {
     //TODO: Candidate account add here.
     #[account(mut)]
     pub voter: Signer<'info>,
