@@ -1,5 +1,5 @@
+use crate::state::Candidate;
 use anchor_lang::prelude::*;
-
 declare_id!("JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H");
 
 pub mod error;
@@ -10,7 +10,6 @@ use instructions::*;
 
 #[program]
 pub mod d21_voting_dapp {
-    use crate::state::Candidate;
 
     use super::*;
 
@@ -54,7 +53,6 @@ pub mod d21_voting_dapp {
     pub fn calculate_result(
         ctx: Context<ElectionResultContext>,
         election_id: u64,
-        voter_name: String,
     ) -> Result<Candidate> {
         _calculate_result(ctx, election_id)
     }
