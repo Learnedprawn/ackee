@@ -189,8 +189,10 @@ async function verifyElection(
 
     assert.equal(electionAccount.electionName, election.electionName)
     assert.equal(electionAccount.electionDescription, election.electionDesciption)
-    // assert.equal(electionAccount.electionFee, election.electionFee)
-    // assert.equal(electionAccount.startDate.toString(), election.startDate.toString())
-    // assert.equal(electionAccount.endDate.toString(), election.endDate.toString())
-    // assert.equal(electionAccount.election.toString(), election.publicKey.toString())
+    assert.ok(electionAccount.electionFee.eq(election.electionFee))
+    // Above and below both methods work
+    assert.equal(electionAccount.electionFee.toString(), election.electionFee.toString())
+    assert.equal(electionAccount.startDate.toString(), election.startDate.toString())
+    assert.equal(electionAccount.endDate.toString(), election.endDate.toString())
+    assert.equal(electionAccount.electionOrganizer, election.electionOrganizer.toString())
 }
