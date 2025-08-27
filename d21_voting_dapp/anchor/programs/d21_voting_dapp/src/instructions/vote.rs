@@ -5,42 +5,47 @@ use crate::{
     state::{Candidate, Election, Voter},
 };
 
-pub fn _calculate_result(
-    ctx: Context<ElectionResultContext>,
-    _election_id: u64,
-) -> Result<Candidate> {
-    let election_account = &mut ctx.accounts.election;
-    let candidates: &Vec<Candidate> = &election_account.candidate_list;
-    // let mut winner: Candidate = Candidate {
-    //     election: (,
-    //     candidate: (),
-    //     name: (),
-    //     vote_count: 0,
-    // };
-    // for candidate in candidates {
-    //     if winner.vote_count < candidate.vote_count {
-    //         winner = candidate.clone();
-    //     }
-    // }
-    let winner = election_account
-        .candidate_list
-        .iter()
-        .max_by_key(|candidate| candidate.vote_count)
-        .cloned()
-        .ok_or(ElectionError::NoCandidatesForResult);
-    Ok(winner.unwrap())
+pub fn _vote(ctx: Context<VoteContext>, _candidate: Pubkey) -> Result<()> {
+    require!(
+        ctx.accounts.election.start_date < Clock::get()?.unix_timestamp,
+        ElectionError::StartDateInThePast
+    );
+    require!(
+        ctx.accounts.election.end_date > Clock::get()?.unix_timestamp,
+        ElectionError::VotingAfterEndDate
+    );
+    require!(
+        ctx.accounts.voter_account.election.key() == ctx.accounts.election.key(),
+        ElectionError::VotingAfterEndDate
+    );
+
+    ctx.accounts.candidate_account.vote_count += 1;
+
+    Ok(())
 }
 
 #[derive(Accounts)]
-#[instruction(election_id: u64)]
-pub struct ElectionResultContext<'info> {
+#[instruction(candidate: Pubkey)]
+pub struct VoteContext<'info> {
     #[account(mut)]
-    pub anyone: Signer<'info>,
+    pub voter: Signer<'info>,
     #[account(
         mut,
-        seeds = [b"election", election_id.to_le_bytes().as_ref()],
+        // seeds = [b"voter", voter.key().as_ref(), election.key().as_ref()],
+        seeds = [b"voter", voter.key().as_ref(), election.key().as_ref()],
         bump
     )]
+    pub voter_account: Account<'info, Voter>,
+    #[account()]
     pub election: Account<'info, Election>,
+    #[account(mut)]
+    pub candidate_account: Account<'info, Candidate>,
+    #[account(
+        // seeds = [b"candidate", election.key().as_ref(), candidate.key().as_ref(), candidate.key().as_ref()],
+        seeds = [b"candidate", election.key().as_ref(), voter.key().as_ref(), candidate.key().as_ref()],
+        bump
+
+    )]
+    pub candidate: Account<'info, Candidate>,
     pub system_program: Program<'info, System>,
 }
