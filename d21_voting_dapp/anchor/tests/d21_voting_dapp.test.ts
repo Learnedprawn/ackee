@@ -93,6 +93,105 @@ describe('d21_voting_dapp', () => {
             verifyCandidate(program, election_candidate, candidate)
         })
     })
+    describe('Initialize Voter', () => {
+        it('Should initialize voter successfully', async () => {
+            // First, set up a test election
+            const election_voter: Election = {
+                electionId: new BN(3),
+                electionName: 'Voter Election',
+                electionDesciption: 'Voter Election Description',
+                electionFee: new BN(0),
+                electionOrganizer: electionOrganizer.publicKey,
+                startDate: new anchor.BN(Math.floor(Date.now() / 1000)),
+                endDate: new anchor.BN(Math.floor(Date.now() / 1000) + 7200),
+                candidateList: [],
+            };
+
+            // Initialize the election first
+            await initializeElection(program, electionOrganizer, election_voter);
+
+            // Derive PDA for election
+            const [electionPda] = getElectionPda(program, election_voter.electionId);
+            console.log("electionPda for voter test: ", electionPda);
+
+            // Create a voter object
+            const voter: Voter = {
+                voter: voter1.publicKey,
+                election: electionPda,
+                voterName: "Name for Voter",
+                votesGiven: new BN(0),
+                negativeVotesGiven: new BN(0),
+            };
+
+            // Initialize the voter
+            const voterPda = await initializeVoter(program, voter, voter1, electionPda, election_voter.electionId);
+
+            // Fetch the account info for debug/logging
+            const accountInfo = await program.provider.connection.getAccountInfo(voterPda);
+            console.log("Voter Account Info: ", accountInfo);
+
+            // Verify the voter account
+            await verifyVoter(program, electionPda, voter);
+        });
+    });
+
+    describe('Vote', () => {
+        it('Should allow a voter to vote for a candidate', async () => {
+            // 1. Setup election
+            const election_vote: Election = {
+                electionId: new BN(4),
+                electionName: 'Vote Election',
+                electionDesciption: 'Vote Election Description',
+                electionFee: new BN(0),
+                electionOrganizer: electionOrganizer.publicKey,
+                startDate: new anchor.BN(Math.floor(Date.now() / 1000)), // already started
+                endDate: new anchor.BN(Math.floor(Date.now() / 1000) + 7200),
+                candidateList: [],
+            };
+            await initializeElection(program, electionOrganizer, election_vote);
+
+            const [electionPda] = getElectionPda(program, election_vote.electionId);
+
+            // 2. Initialize candidate
+            const candidate: Candidate = {
+                election: electionPda,
+                candidate: candidate1.publicKey,
+                candidateName: "Candidate One",
+                voteCount: new BN(0),
+            };
+            const candidatePda = await initializeCandidate(program, candidate, candidate1, electionPda, election_vote.electionId);
+
+            // 3. Initialize voter
+            const voter: Voter = {
+                voter: voter1.publicKey,
+                election: electionPda,
+                voterName: "Alice",
+                votesGiven: new BN(0),
+                negativeVotesGiven: new BN(0),
+            };
+            const voterPda = await initializeVoter(program, voter, voter1, electionPda, election_vote.electionId);
+
+            // 4. Derive candidate PDA for voting seeds
+            // const [voteCandidatePda] = getCandidatePdaForVote(program, electionPda, voter1.publicKey, candidate1.publicKey);
+
+            // 5. Perform the vote
+            await program.methods
+                .vote(candidate1.publicKey)
+                .accounts({
+                    voter: voter1.publicKey,
+                    voterAccount: voterPda,
+                    election: electionPda,
+                    candidateAccount: candidatePda,
+                    systemProgram: anchor.web3.SystemProgram.programId,
+                })
+                .signers([voter1])
+                .rpc();
+
+            // 6. Fetch candidate account to verify vote count
+            const candidateAccount = await program.account.candidate.fetch(candidatePda);
+            assert.equal(candidateAccount.voteCount.toString(), "1");
+        });
+    });
 
 })
 
@@ -238,4 +337,49 @@ interface Voter {
     voterName: string,
     votesGiven: BN,
     negativeVotesGiven: BN,
+}
+
+async function initializeVoter(
+    program: Program<D21VotingDapp>,
+    voterAccount: Voter,
+    voterKeypair: Keypair,
+    electionPda: PublicKey,
+    electionId: BN,
+) {
+    const [voterPda] = getVoterPda(program, voterKeypair.publicKey, electionPda);
+
+    await program.methods
+        .initializeVoter(electionId, voterAccount.voterName)
+        .accounts({
+            voter: voterKeypair.publicKey,
+            election: electionPda,
+            voterAccount: voterPda,
+            systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([voterKeypair])
+        .rpc({ skipPreflight: true });
+
+    return voterPda;
+}
+
+function getVoterPda(program: Program<D21VotingDapp>, voter: PublicKey, election: PublicKey): [PublicKey, number] {
+    return anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from('voter'), voter.toBuffer(), election.toBuffer()],
+        program.programId,
+    );
+}
+
+async function verifyVoter(
+    program: Program<D21VotingDapp>,
+    electionPda: PublicKey,
+    voter: Voter
+) {
+    const [voterPda] = getVoterPda(program, voter.voter, electionPda);
+    const voterAccount = await program.account.voter.fetch(voterPda);
+
+    assert.equal(voterAccount.name, voter.voterName);
+    assert.equal(voterAccount.votesGiven.toString(), voter.votesGiven.toString());
+    assert.equal(voterAccount.negativeVotesGiven.toString(), voter.negativeVotesGiven.toString());
+    assert.equal(voterAccount.voter.toString(), voter.voter.toString());
+    assert.equal(voterAccount.election.toString(), voter.election.toString());
 }

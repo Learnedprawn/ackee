@@ -26,8 +26,10 @@ pub struct VoterContext<'info> {
     pub voter: Signer<'info>,
     #[account(
         mut,
-        seeds = [b"election", election_id.to_le_bytes().as_ref()],
-        bump,
+
+        // TODO: Here too
+        // seeds = [b"election", election_id.to_le_bytes().as_ref()],
+        // bump,
     )]
     pub election: Account<'info, Election>,
     #[account(

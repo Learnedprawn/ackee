@@ -240,28 +240,7 @@ export type D21VotingDapp = {
         },
         {
           "name": "election",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  101,
-                  108,
-                  101,
-                  99,
-                  116,
-                  105,
-                  111,
-                  110
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "electionId"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "voterAccount",
@@ -325,29 +304,7 @@ export type D21VotingDapp = {
         },
         {
           "name": "voterAccount",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  111,
-                  116,
-                  101,
-                  114
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "voter"
-              },
-              {
-                "kind": "account",
-                "path": "election"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "election"
@@ -355,39 +312,6 @@ export type D21VotingDapp = {
         {
           "name": "candidateAccount",
           "writable": true
-        },
-        {
-          "name": "candidate",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  97,
-                  110,
-                  100,
-                  105,
-                  100,
-                  97,
-                  116,
-                  101
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "election"
-              },
-              {
-                "kind": "account",
-                "path": "voter"
-              },
-              {
-                "kind": "arg",
-                "path": "candidate"
-              }
-            ]
-          }
         },
         {
           "name": "systemProgram",

@@ -32,20 +32,20 @@ pub struct VoteContext<'info> {
     #[account(
         mut,
         // seeds = [b"voter", voter.key().as_ref(), election.key().as_ref()],
-        seeds = [b"voter", voter.key().as_ref(), election.key().as_ref()],
-        bump
+        // seeds = [b"voter", voter.key().as_ref(), election.key().as_ref()],
+        // bump
     )]
     pub voter_account: Account<'info, Voter>,
     #[account()]
     pub election: Account<'info, Election>,
     #[account(mut)]
     pub candidate_account: Account<'info, Candidate>,
-    #[account(
-        // seeds = [b"candidate", election.key().as_ref(), candidate.key().as_ref(), candidate.key().as_ref()],
-        seeds = [b"candidate", election.key().as_ref(), voter.key().as_ref(), candidate.key().as_ref()],
-        bump
-
-    )]
-    pub candidate: Account<'info, Candidate>,
+    // #[account(
+    //     // seeds = [b"candidate", election.key().as_ref(), candidate.key().as_ref(), candidate.key().as_ref()],
+    //     // seeds = [b"candidate", election.key().as_ref(), voter.key().as_ref(), candidate.key().as_ref()],
+    //     // bump
+    //
+    // )]
+    // pub candidate: Account<'info, Candidate>,
     pub system_program: Program<'info, System>,
 }
