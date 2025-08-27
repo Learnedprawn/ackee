@@ -231,3 +231,11 @@ async function verifyCandidate(
     assert.equal(candidateAccount.name, candidate.candidateName)
     assert.equal(candidateAccount.voteCount.toString(), candidate.voteCount.toString())
 }
+
+interface Voter {
+    voter: PublicKey,
+    election: PublicKey,
+    voterName: string,
+    votesGiven: BN,
+    negativeVotesGiven: BN,
+}
