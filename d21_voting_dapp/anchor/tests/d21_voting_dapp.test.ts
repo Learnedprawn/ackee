@@ -86,25 +86,8 @@ describe('d21_voting_dapp', () => {
                 candidateName: "Name of candidate1",
                 voteCount: new BN(0),
             }
-            // await initializeCandidate(program, candidate, candidate1, electionPda, election_candidate.electionId)
-            let [candidatePda] = getCandidatePda(program, electionPda, candidate1.publicKey)
-            console.log("candidatePda: ", candidatePda);
-            try {
+            let candidatePda = await initializeCandidate(program, candidate, candidate1, electionPda, election_candidate.electionId)
 
-                await program.methods
-                    .initializeCandidate(candidate.candidateName, election_candidate.electionId)
-                    .accounts({
-                        candidate: candidate1.publicKey,
-                        election: electionPda,
-                        candidateAccount: candidatePda,
-                        systemProgram: anchor.web3.SystemProgram.programId,
-                    })
-                    .signers([candidate1])
-                    .rpc()
-            } catch (e) {
-                console.log(e)
-
-            }
             const accountInfo = await program.provider.connection.getAccountInfo(candidatePda);
             console.log("Account Info: ", accountInfo);
             verifyCandidate(program, election_candidate, candidate)
