@@ -1,4 +1,5 @@
 import * as anchor from '@coral-xyz/anchor'
+import assert from "assert"
 import { Program } from '@coral-xyz/anchor';
 import { D21VotingDapp } from '../target/types/d21_voting_dapp'
 import BN from 'bn.js'
@@ -43,19 +44,6 @@ describe('d21_voting_dapp', () => {
 
     describe('Initialize Election', () => {
         it('Should initialize election successfully', async () => {
-            // pub struct Election {
-            //     pub election_id: u64,
-            //     #[max_len(MAX_NAME_LEN)]
-            //     pub election_name: String,
-            //     #[max_len(MAX_DESCRIPTION_LEN)]
-            //     pub election_description: String,
-            //                     pub election_fee: u64,
-            //                         pub election_organizer: Pubkey,
-            //                             pub start_date: i64,
-            //                                 pub end_date: i64,
-            //     #[max_len(MAX_CANDIDATE_LEN)]
-            //     pub candidate_list: Vec<Candidate>,
-            // }
             const election: Election = {
                 electionId: new BN(1),
                 electionName: 'First Election',
@@ -65,54 +53,41 @@ describe('d21_voting_dapp', () => {
                 startDate: new anchor.BN(Math.floor(Date.now() / 1000)),
                 endDate: new anchor.BN(Math.floor(Date.now() / 1000) + 7200),
                 candidateList: [],
-
             }
-            // try {
             await initializeElection(program, electionOrganizer, election)
             await verifyElection(program, election)
-
-            //     // If we get here, the election was created successfully - this means the MAX_LEN macro
-            //     // doesn't enforce length limits at runtime, only for space calculation!
-            //     const [electionPda] = getElectionPda(program, election.electionId)
-            //     const electionAccount = await program.account.election.fetch(electionPda)
-            //
-            //     console.log('🚨 MAX_LEN MACRO DOES NOT ENFORCE LENGTH LIMITS! 🚨')
-            //     console.log('election name:', eventAccount.electionName)
-            //     console.log('election name length:', eventAccount.electionName.length)
-            //     console.log('Expected max length: 30')
-            //     console.log('Actual length:', electionAccount.electionName.length)
-            //
-            //     // This test should fail to demonstrate the issue
-            //     assert(
-            //         electionAccount.electionName.length <= 30,
-            //         `election name length (${eventAccount.electionName.length}) exceeds maximum allowed (30). ` +
-            //         'The #[max_len] macro does not enforce runtime length validation!',
-            //     )
-            // } catch (error) {
-            //     // This is what we expect - the election creation should fail due to our validation
-            //     assert(error.message.includes('Name too long'))
-            // }
+        })
+    })
+    describe('Initialize Candidate', () => {
+        // pub struct Candidate {
+        //     pub election: Pubkey,
+        //     pub candidate: Pubkey,
+        //     #[max_len(MAX_NAME_LEN)]
+        //     pub name: String,
+        //     pub vote_count: i64,
+        // }
+        it('Should initialize candidate successfully', async () => {
+            const election_candidate: Election = {
+                electionId: new BN(1),
+                electionName: 'Candidate Election',
+                electionDesciption: 'Candidate Election Desciption',
+                electionFee: new BN(0),
+                electionOrganizer: electionOrganizer.publicKey,
+                startDate: new anchor.BN(Math.floor(Date.now() / 1000)),
+                endDate: new anchor.BN(Math.floor(Date.now() / 1000) + 7200),
+                candidateList: [],
+            }
+            let election_pda: PublicKey = await initializeElection(program, electionOrganizer, election_candidate)
+            const candidate: Candidate = {
+                election: election_pda,
+                candidate: candidate1.publicKey,
+                candidateName: "Name of candidate1",
+                voteCount: new BN(0),
+            }
+            initializeCandidate()
         })
     })
 
-    // let payer: KeyPairSigner
-    //
-    // beforeAll(async () => {
-    //     payer = await loadKeypairSignerFromFile(process.env.ANCHOR_WALLET!)
-    // })
-    //
-    // it('should run the program and print "GM!" to the transaction log', async () => {
-    //     // ARRANGE
-    //     expect.assertions(1)
-    //     const ix = getGreetInstruction()
-    //
-    //     // ACT
-    //     const sx = await sendAndConfirm({ ix, payer })
-    //
-    //     // ASSERT
-    //     expect(sx).toBeDefined()
-    //     console.log('Transaction signature:', sx)
-    // })
 })
 
 // Helper function to keep the tests DRY
@@ -158,6 +133,7 @@ async function initializeElection(
         })
         .signers([electionOrganizer])
         .rpc()
+    return electionPda
 }
 
 // Helper types and functions
@@ -195,4 +171,54 @@ async function verifyElection(
     assert.equal(electionAccount.startDate.toString(), election.startDate.toString())
     assert.equal(electionAccount.endDate.toString(), election.endDate.toString())
     assert.equal(electionAccount.electionOrganizer, election.electionOrganizer.toString())
+}
+
+interface Candidate {
+    election: PublicKey,
+    candidate: PublicKey,
+    candidateName: string,
+    voteCount: BN,
+}
+async function initializeCandidate(
+    program: Program<D21VotingDapp>,
+    candidate: Candidate,
+    electionPda: PublicKey,
+) {
+    const [candidatePda] = getCandidatePda(program, electionPda, candidate.candidate)
+
+    await program.methods
+        .initializeCandidate(candidate.candidateName,)
+        .accounts({
+            candidate: candidate.candidate,
+            election: electionPda,
+            systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([electionOrganizer])
+        .rpc()
+    return electionPda
+}
+
+function getCandidatePda(
+    program: Program<D21VotingDapp>,
+    election: PublicKey,
+    candidate: PublicKey,
+): [PublicKey, number] {
+    // seeds = [b"candidate", election.key().as_ref(), candidate.key().as_ref(), candidate.key().as_ref()],
+    return anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from('candidate'), election.toBuffer(), candidate.toBuffer()],
+        program.programId,
+    )
+}
+
+async function verifyCandidate(
+    program: Program<D21VotingDapp>,
+    election: Election,
+    candidate: Candidate,
+) {
+    const [electionPda] = getElectionPda(program, election.electionId)
+    const [candidatePda] = getCandidatePda(program, electionPda, candidate.candidate)
+    const candidateAccount = await program.account.candidate.fetch(candidatePda)
+
+    assert.equal(candidateAccount.name, candidate.candidateName)
+    assert.equal(candidateAccount.voteCount.toString(), candidate.voteCount.toString())
 }

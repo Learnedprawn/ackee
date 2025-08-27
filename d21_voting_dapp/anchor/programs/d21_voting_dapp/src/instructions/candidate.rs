@@ -7,7 +7,11 @@ use crate::{
 
 const DISCRIMINANT: usize = 8;
 
-pub fn _initialize_candidate(ctx: Context<CandidateContext>, candidate_name: String) -> Result<()> {
+pub fn _initialize_candidate(
+    ctx: Context<CandidateContext>,
+    candidate_name: String,
+    _election_id: u64,
+) -> Result<()> {
     let candidate_account = &mut ctx.accounts.candidate_account;
     require!(
         ctx.accounts.election.end_date >= Clock::get()?.unix_timestamp,
@@ -27,16 +31,21 @@ pub fn _initialize_candidate(ctx: Context<CandidateContext>, candidate_name: Str
 }
 
 #[derive(Accounts)]
+#[instruction(election_id: u64)]
 pub struct CandidateContext<'info> {
     #[account(mut)]
     pub candidate: Signer<'info>,
-    #[account(mut)]
+    #[account(
+        mut,
+        seeds = [b"election", election_id.to_le_bytes().as_ref()],
+        bump
+    )]
     pub election: Account<'info, Election>,
     #[account(
         init,
         payer = candidate,
         space = DISCRIMINANT + Candidate::INIT_SPACE,
-        seeds = [b"candidate", election.key().as_ref(), candidate.key().as_ref(), candidate.key().as_ref()],
+        seeds = [b"candidate", election.key().as_ref(), candidate.key().as_ref()],
         bump
     )]
     pub candidate_account: Account<'info, Candidate>,
