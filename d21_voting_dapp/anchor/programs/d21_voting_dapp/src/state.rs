@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 
 pub const MAX_NAME_LEN: usize = 30;
 pub const MAX_DESCRIPTION_LEN: usize = 100;
+pub const MAX_CANDIDATE_LEN: usize = 20;
 
 #[account]
 #[derive(InitSpace)]
@@ -15,6 +16,8 @@ pub struct Election {
     pub election_organizer: Pubkey,
     pub start_date: i64,
     pub end_date: i64,
+    #[max_len(MAX_CANDIDATE_LEN)]
+    pub candidate_list: Vec<Candidate>,
 }
 #[account]
 #[derive(InitSpace)]

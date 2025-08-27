@@ -14,4 +14,6 @@ pub enum ElectionError {
     VotingAfterEndDate,
     #[msg("Can't register after end date")]
     RegistrationAfterEndDate,
+    #[msg("0 candidates in election")]
+    NoCandidatesForResult,
 }
