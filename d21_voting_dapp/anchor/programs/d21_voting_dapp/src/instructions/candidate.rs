@@ -37,8 +37,11 @@ pub struct CandidateContext<'info> {
     pub candidate: Signer<'info>,
     #[account(
         mut,
-        seeds = [b"election", election_id.to_le_bytes().as_ref()],
-        bump
+
+        // TODO: WTFFFFFFFFFFFFFFF is this for. Took too much time to figure out. When to use this
+        // and when to not should be understood later.
+        // seeds = [b"election", election_id.to_le_bytes().as_ref()],
+        // bump
     )]
     pub election: Account<'info, Election>,
     #[account(

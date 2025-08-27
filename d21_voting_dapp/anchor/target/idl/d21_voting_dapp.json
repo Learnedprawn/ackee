@@ -115,10 +115,6 @@
               {
                 "kind": "account",
                 "path": "candidate"
-              },
-              {
-                "kind": "account",
-                "path": "candidate"
               }
             ]
           }
@@ -132,6 +128,10 @@
         {
           "name": "candidate_name",
           "type": "string"
+        },
+        {
+          "name": "election_id",
+          "type": "u64"
         }
       ]
     },

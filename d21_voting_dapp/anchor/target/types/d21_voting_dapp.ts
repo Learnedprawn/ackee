@@ -121,10 +121,6 @@ export type D21VotingDapp = {
               {
                 "kind": "account",
                 "path": "candidate"
-              },
-              {
-                "kind": "account",
-                "path": "candidate"
               }
             ]
           }
@@ -138,6 +134,10 @@ export type D21VotingDapp = {
         {
           "name": "candidateName",
           "type": "string"
+        },
+        {
+          "name": "electionId",
+          "type": "u64"
         }
       ]
     },

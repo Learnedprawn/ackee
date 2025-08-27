@@ -11,7 +11,7 @@ import {
     KeyPairSigner,
     signTransactionMessageWithSigners,
 } from 'gill'
-import { LAMPORTS_PER_SOL, Connection, PublicKey } from '@solana/web3.js'
+import { LAMPORTS_PER_SOL, Connection, PublicKey, Keypair } from '@solana/web3.js'
 import { getGreetInstruction } from '../src'
 // @ts-ignore error TS2307 suggest setting `moduleResolution` but this is already configured
 import { loadKeypairSignerFromFile } from 'gill/node'
@@ -68,7 +68,7 @@ describe('d21_voting_dapp', () => {
         // }
         it('Should initialize candidate successfully', async () => {
             const election_candidate: Election = {
-                electionId: new BN(1),
+                electionId: new BN(2),
                 electionName: 'Candidate Election',
                 electionDesciption: 'Candidate Election Desciption',
                 electionFee: new BN(0),
@@ -77,14 +77,37 @@ describe('d21_voting_dapp', () => {
                 endDate: new anchor.BN(Math.floor(Date.now() / 1000) + 7200),
                 candidateList: [],
             }
-            let election_pda: PublicKey = await initializeElection(program, electionOrganizer, election_candidate)
+            await initializeElection(program, electionOrganizer, election_candidate)
+            let [electionPda] = getElectionPda(program, election_candidate.electionId)
+            console.log("electionPda: ", electionPda);
             const candidate: Candidate = {
-                election: election_pda,
+                election: electionPda,
                 candidate: candidate1.publicKey,
                 candidateName: "Name of candidate1",
                 voteCount: new BN(0),
             }
-            initializeCandidate()
+            // await initializeCandidate(program, candidate, candidate1, electionPda, election_candidate.electionId)
+            let [candidatePda] = getCandidatePda(program, electionPda, candidate1.publicKey)
+            console.log("candidatePda: ", candidatePda);
+            try {
+
+                await program.methods
+                    .initializeCandidate(candidate.candidateName, election_candidate.electionId)
+                    .accounts({
+                        candidate: candidate1.publicKey,
+                        election: electionPda,
+                        candidateAccount: candidatePda,
+                        systemProgram: anchor.web3.SystemProgram.programId,
+                    })
+                    .signers([candidate1])
+                    .rpc()
+            } catch (e) {
+                console.log(e)
+
+            }
+            const accountInfo = await program.provider.connection.getAccountInfo(candidatePda);
+            console.log("Account Info: ", accountInfo);
+            verifyCandidate(program, election_candidate, candidate)
         })
     })
 
@@ -181,21 +204,24 @@ interface Candidate {
 }
 async function initializeCandidate(
     program: Program<D21VotingDapp>,
-    candidate: Candidate,
+    candidateAccount: Candidate,
+    candidate: anchor.web3.Keypair,
     electionPda: PublicKey,
+    electionId: BN,
 ) {
-    const [candidatePda] = getCandidatePda(program, electionPda, candidate.candidate)
+    const [candidatePda] = getCandidatePda(program, electionPda, candidate.publicKey)
 
     await program.methods
-        .initializeCandidate(candidate.candidateName,)
+        .initializeCandidate(candidateAccount.candidateName, electionId)
         .accounts({
-            candidate: candidate.candidate,
+            candidate: candidate.publicKey,
             election: electionPda,
+            candidateAccount: candidatePda,
             systemProgram: anchor.web3.SystemProgram.programId,
         })
-        .signers([electionOrganizer])
-        .rpc()
-    return electionPda
+        .signers([candidate])
+        .rpc({ skipPreflight: true })
+    return candidatePda
 }
 
 function getCandidatePda(
@@ -203,7 +229,7 @@ function getCandidatePda(
     election: PublicKey,
     candidate: PublicKey,
 ): [PublicKey, number] {
-    // seeds = [b"candidate", election.key().as_ref(), candidate.key().as_ref(), candidate.key().as_ref()],
+    // seeds = [b"candidate", election.key().as_ref(), candidate.key().as_ref()],
     return anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from('candidate'), election.toBuffer(), candidate.toBuffer()],
         program.programId,
