@@ -10,6 +10,8 @@ use instructions::*;
 
 #[program]
 pub mod d21_voting_dapp {
+    use crate::state::Candidate;
+
     use super::*;
 
     pub fn initialize_election(
@@ -48,5 +50,12 @@ pub mod d21_voting_dapp {
         voter_name: String,
     ) -> Result<()> {
         _initialize_voter(ctx, election_id, voter_name)
+    }
+    pub fn calculate_result(
+        ctx: Context<ElectionResultContext>,
+        election_id: u64,
+        voter_name: String,
+    ) -> Result<Candidate> {
+        _calculate_result(ctx, election_id)
     }
 }
