@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 use crate::{
     error::ElectionError,
-    state::{Candidate, Election, Voter},
+    state::{Candidate, Election},
 };
 
 pub fn _calculate_result(
@@ -10,7 +10,11 @@ pub fn _calculate_result(
     _election_id: u64,
 ) -> Result<Candidate> {
     let election_account = &mut ctx.accounts.election;
-    let candidates: &Vec<Candidate> = &election_account.candidate_list;
+    // if election_account.candidate1_votes > election_account.candidate2_votes {
+    //     election_account.winner = election_account.candidate1;
+    // } else {
+    //     election_account.winner = election_account.candidate2;
+    // }
     // let mut winner: Candidate = Candidate {
     //     election: (,
     //     candidate: (),
@@ -38,8 +42,8 @@ pub struct ElectionResultContext<'info> {
     pub anyone: Signer<'info>,
     #[account(
         mut,
-        seeds = [b"election", election_id.to_le_bytes().as_ref()],
-        bump
+        // seeds = [b"election", election_id.to_le_bytes().as_ref()],
+        // bump
     )]
     pub election: Account<'info, Election>,
     pub system_program: Program<'info, System>,

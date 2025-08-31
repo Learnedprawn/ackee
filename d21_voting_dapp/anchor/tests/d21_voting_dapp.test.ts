@@ -12,7 +12,6 @@ import {
     signTransactionMessageWithSigners,
 } from 'gill'
 import { LAMPORTS_PER_SOL, Connection, PublicKey, Keypair } from '@solana/web3.js'
-import { getGreetInstruction } from '../src'
 // @ts-ignore error TS2307 suggest setting `moduleResolution` but this is already configured
 import { loadKeypairSignerFromFile } from 'gill/node'
 
@@ -144,7 +143,7 @@ describe('d21_voting_dapp', () => {
                 electionDesciption: 'Vote Election Description',
                 electionFee: new BN(0),
                 electionOrganizer: electionOrganizer.publicKey,
-                startDate: new anchor.BN(Math.floor(Date.now() / 1000)), // already started
+                startDate: new anchor.BN(Math.floor(Date.now() / 1000) + 1000),
                 endDate: new anchor.BN(Math.floor(Date.now() / 1000) + 7200),
                 candidateList: [],
             };
@@ -173,6 +172,8 @@ describe('d21_voting_dapp', () => {
 
             // 4. Derive candidate PDA for voting seeds
             // const [voteCandidatePda] = getCandidatePdaForVote(program, electionPda, voter1.publicKey, candidate1.publicKey);
+
+            await new Promise(resolve => setTimeout(resolve, 2000))
 
             // 5. Perform the vote
             await program.methods

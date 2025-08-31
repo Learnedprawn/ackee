@@ -1,32 +1,32 @@
 import { WalletButton } from '../solana/solana-provider'
-import { D21VotingDappCreate, D21VotingDappProgram, D21VotingDappProgramExplorerLink } from './d21_voting_dapp-ui'
+import {  D21VotingDappProgram, D21VotingDappProgramExplorerLink } from './d21_voting_dapp-ui'
 import { AppHero } from '../app-hero'
 import { useWalletUi } from '@wallet-ui/react'
 
 export default function D21VotingDappFeature() {
-  const { account } = useWalletUi()
+    const { account } = useWalletUi()
 
-  if (!account) {
+    if (!account) {
+        return (
+            <div className="max-w-4xl mx-auto">
+                <div className="hero py-[64px]">
+                    <div className="hero-content text-center">
+                        <WalletButton />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
     return (
-      <div className="max-w-4xl mx-auto">
-        <div className="hero py-[64px]">
-          <div className="hero-content text-center">
-            <WalletButton />
-          </div>
-        </div>
-      </div>
-    )
-  }
+        <div>
+            <AppHero title="D21VotingDapp" subtitle={'Run the program by clicking the "Run program" button.'}>
+                <p className="mb-6">
 
-  return (
-    <div>
-      <AppHero title="D21VotingDapp" subtitle={'Run the program by clicking the "Run program" button.'}>
-        <p className="mb-6">
-          <D21VotingDappProgramExplorerLink />
-        </p>
-        <D21VotingDappCreate />
-      </AppHero>
-      <D21VotingDappProgram />
-    </div>
-  )
+                </p>
+
+            </AppHero>
+            <D21VotingDappProgram />
+        </div>
+    )
 }

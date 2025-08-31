@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/d21_voting_dapp.json`.
  */
 export type D21VotingDapp = {
-  "address": "JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H",
+  "address": "AjYHbu4pMAkeDHSzAXo2bTgr41PpmdxfW3SNnStNt3oz",
   "metadata": {
     "name": "d21VotingDapp",
     "version": "0.1.0",
@@ -33,28 +33,7 @@ export type D21VotingDapp = {
         },
         {
           "name": "election",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  101,
-                  108,
-                  101,
-                  99,
-                  116,
-                  105,
-                  111,
-                  110
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "electionId"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "systemProgram",

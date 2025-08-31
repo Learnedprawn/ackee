@@ -13,7 +13,7 @@ export function getD21VotingDappProgramId(cluster: SolanaClusterId) {
     case 'solana:devnet':
     case 'solana:testnet':
       // This is the program ID for the D21VotingDapp program on devnet and testnet.
-      return address('6z68wfurCMYkZG51s1Et9BJEd9nJGUusjHXNt4dGbNNF')
+      return address('AjYHbu4pMAkeDHSzAXo2bTgr41PpmdxfW3SNnStNt3oz')
     case 'solana:mainnet':
     default:
       return D21_VOTING_DAPP_PROGRAM_ADDRESS

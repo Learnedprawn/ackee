@@ -1,6 +1,6 @@
 use crate::state::Candidate;
 use anchor_lang::prelude::*;
-declare_id!("JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H");
+declare_id!("AjYHbu4pMAkeDHSzAXo2bTgr41PpmdxfW3SNnStNt3oz");
 
 pub mod error;
 pub mod instructions;

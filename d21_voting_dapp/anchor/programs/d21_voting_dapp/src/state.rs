@@ -18,6 +18,11 @@ pub struct Election {
     pub end_date: i64,
     #[max_len(MAX_CANDIDATE_LEN)]
     pub candidate_list: Vec<Candidate>,
+    // pub candidate1: Pubkey,
+    // pub candidate1_votes: u64,
+    // pub candidate2: Pubkey,
+    // pub candidate2_votes: u64,
+    // pub winner: Pubkey,
 }
 #[account]
 #[derive(InitSpace)]
