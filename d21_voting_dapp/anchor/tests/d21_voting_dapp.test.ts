@@ -173,9 +173,19 @@ describe('d21_voting_dapp', () => {
             // 4. Derive candidate PDA for voting seeds
             // const [voteCandidatePda] = getCandidatePdaForVote(program, electionPda, voter1.publicKey, candidate1.publicKey);
 
-            await new Promise(resolve => setTimeout(resolve, 2000))
 
             // 5. Perform the vote
+            await program.methods
+                .vote(candidate1.publicKey)
+                .accounts({
+                    voter: voter1.publicKey,
+                    voterAccount: voterPda,
+                    election: electionPda,
+                    candidateAccount: candidatePda,
+                    systemProgram: anchor.web3.SystemProgram.programId,
+                })
+                .signers([voter1])
+                .rpc();
             await program.methods
                 .vote(candidate1.publicKey)
                 .accounts({
@@ -190,7 +200,7 @@ describe('d21_voting_dapp', () => {
 
             // 6. Fetch candidate account to verify vote count
             const candidateAccount = await program.account.candidate.fetch(candidatePda);
-            assert.equal(candidateAccount.voteCount.toString(), "1");
+            assert.equal(candidateAccount.voteCount.toString(), "2");
         });
     });
 
