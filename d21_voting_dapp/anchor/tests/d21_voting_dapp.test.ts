@@ -146,7 +146,7 @@ describe('d21_voting_dapp', () => {
                 startDate: new anchor.BN(Math.floor(Date.now() / 1000) + 1000),
                 endDate: new anchor.BN(Math.floor(Date.now() / 1000) + 7200),
                 candidateList: [],
-            };
+            }
             await initializeElection(program, electionOrganizer, election_vote);
 
             const [electionPda] = getElectionPda(program, election_vote.electionId);
@@ -204,7 +204,114 @@ describe('d21_voting_dapp', () => {
         });
     });
 
-})
+    describe('Calculate Result', () => {
+        it('Should calculate correct result', async () => {
+            // 1. Setup election
+            const result_election: Election = {
+                electionId: new BN(5),
+                electionName: 'Result Test Election',
+                electionDesciption: 'Vote Election Description',
+                electionFee: new BN(0),
+                electionOrganizer: electionOrganizer.publicKey,
+                startDate: new anchor.BN(Math.floor(Date.now() / 1000) + 1000),
+                endDate: new anchor.BN(Math.floor(Date.now() / 1000) + 7200),
+                candidateList: [],
+            }
+            await initializeElection(program, electionOrganizer, result_election);
+
+            const [electionPda] = getElectionPda(program, result_election.electionId);
+
+            // 2. Initialize candidate
+            const candidate1_struct: Candidate = {
+                election: electionPda,
+                candidate: candidate1.publicKey,
+                candidateName: "Candidate One",
+                voteCount: new BN(0),
+            };
+            const candidate1Pda = await initializeCandidate(program, candidate1_struct, candidate1, electionPda, result_election.electionId);
+
+            const candidate2_struct: Candidate = {
+                election: electionPda,
+                candidate: candidate2.publicKey,
+                candidateName: "Candidate Two",
+                voteCount: new BN(0),
+            };
+            const candidate2Pda = await initializeCandidate(program, candidate2_struct, candidate1, electionPda, result_election.electionId);
+
+            // 3. Initialize voter
+            const voter1_struct: Voter = {
+                voter: voter1.publicKey,
+                election: electionPda,
+                voterName: "Vinesh",
+                votesGiven: new BN(0),
+                negativeVotesGiven: new BN(0),
+            };
+            const voter1Pda = await initializeVoter(program, voter1_struct, voter1, electionPda, result_election.electionId);
+            const voter2_struct: Voter = {
+                voter: voter2.publicKey,
+                election: electionPda,
+                voterName: "Taufique",
+                votesGiven: new BN(0),
+                negativeVotesGiven: new BN(0),
+            };
+            const voter2Pda = await initializeVoter(program, voter2_struct, voter1, electionPda, result_election.electionId);
+            const voter3_struct: Voter = {
+                voter: voter3.publicKey,
+                election: electionPda,
+                voterName: "Sadhak",
+                votesGiven: new BN(0),
+                negativeVotesGiven: new BN(0),
+            };
+            const voter3Pda = await initializeVoter(program, voter3_struct, voter1, electionPda, result_election.electionId);
+
+            // 4. Derive candidate PDA for voting seeds
+            // const [voteCandidatePda] = getCandidatePdaForVote(program, electionPda, voter1.publicKey, candidate1.publicKey);
+
+
+            // 5. Perform the election: Vinesh and Taufique Vote for One and Sadhak votes for Two 
+            await program.methods
+                .vote(candidate1.publicKey)
+                .accounts({
+                    voter: voter1.publicKey,
+                    voterAccount: voter1Pda,
+                    election: electionPda,
+                    candidateAccount: candidate1Pda,
+                    systemProgram: anchor.web3.SystemProgram.programId,
+                })
+                .signers([voter1])
+                .rpc();
+            await program.methods
+                .vote(candidate1.publicKey)
+                .accounts({
+                    voter: voter2.publicKey,
+                    voterAccount: voter2Pda,
+                    election: electionPda,
+                    candidateAccount: candidate1Pda,
+                    systemProgram: anchor.web3.SystemProgram.programId,
+                })
+                .signers([voter2])
+                .rpc();
+            await program.methods
+                .vote(candidate2.publicKey)
+                .accounts({
+                    voter: voter3.publicKey,
+                    voterAccount: voter3Pda,
+                    election: electionPda,
+                    candidateAccount: candidate2Pda,
+                    systemProgram: anchor.web3.SystemProgram.programId,
+                })
+                .signers([voter3])
+                .rpc();
+
+            // 6. Fetch candidate account to verify vote count
+            const candidateAccount = await program.account.candidate.fetch(candidate1Pda);
+            const candidateAccount = await program.account.candidate.fetch(candidate2Pda);
+            assert.equal(candidateAccount.voteCount.toString(), "2");
+        });
+    });
+
+
+});
 
 // Helper function to keep the tests DRY
 let latestBlockhash: Awaited<ReturnType<typeof getLatestBlockhash>> | undefined
