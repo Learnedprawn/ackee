@@ -7,7 +7,7 @@ use crate::{
 
 pub fn _vote(ctx: Context<VoteContext>, _candidate: Pubkey) -> Result<()> {
     require!(
-        ctx.accounts.election.start_date < Clock::get()?.unix_timestamp,
+        ctx.accounts.election.start_date > Clock::get()?.unix_timestamp,
         ElectionError::StartDateInThePast
     );
     require!(
