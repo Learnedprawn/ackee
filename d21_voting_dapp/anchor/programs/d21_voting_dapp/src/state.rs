@@ -16,13 +16,13 @@ pub struct Election {
     pub election_organizer: Pubkey,
     pub start_date: i64,
     pub end_date: i64,
-    #[max_len(MAX_CANDIDATE_LEN)]
-    pub candidate_list: Vec<Candidate>,
-    // pub candidate1: Pubkey,
-    // pub candidate1_votes: u64,
-    // pub candidate2: Pubkey,
-    // pub candidate2_votes: u64,
-    // pub winner: Pubkey,
+    // #[max_len(MAX_CANDIDATE_LEN)]
+    // pub candidate_list: Vec<Candidate>,
+    pub candidate1: Pubkey,
+    pub candidate1_votes: u64,
+    pub candidate2: Pubkey,
+    pub candidate2_votes: u64,
+    pub winner: Pubkey,
 }
 #[account]
 #[derive(InitSpace)]
@@ -33,15 +33,15 @@ pub struct Vote {
     pub election_fee: u64,
 }
 
-#[account]
-#[derive(InitSpace)]
-pub struct Candidate {
-    pub election: Pubkey,
-    pub candidate: Pubkey,
-    #[max_len(MAX_NAME_LEN)]
-    pub name: String,
-    pub vote_count: i64,
-}
+// #[account]
+// #[derive(InitSpace)]
+// pub struct Candidate {
+//     pub election: Pubkey,
+//     pub candidate: Pubkey,
+//     #[max_len(MAX_NAME_LEN)]
+//     pub name: String,
+//     pub vote_count: i64,
+// }
 
 #[account]
 #[derive(InitSpace)]

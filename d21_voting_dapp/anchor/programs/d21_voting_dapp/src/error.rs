@@ -16,4 +16,8 @@ pub enum ElectionError {
     RegistrationAfterEndDate,
     #[msg("0 candidates in election")]
     NoCandidatesForResult,
+    #[msg("Not Registered for this election")]
+    NotRegisteredForThisElection,
+    #[msg("Cannot register again")]
+    CannotRegisterAgain,
 }

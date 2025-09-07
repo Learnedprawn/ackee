@@ -39,12 +39,7 @@
           "name": "election_id",
           "type": "u64"
         }
-      ],
-      "returns": {
-        "defined": {
-          "name": "Candidate"
-        }
-      }
+      ]
     },
     {
       "name": "initialize_candidate",
@@ -69,45 +64,11 @@
           "writable": true
         },
         {
-          "name": "candidate_account",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  97,
-                  110,
-                  100,
-                  105,
-                  100,
-                  97,
-                  116,
-                  101
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "election"
-              },
-              {
-                "kind": "account",
-                "path": "candidate"
-              }
-            ]
-          }
-        },
-        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
-        {
-          "name": "candidate_name",
-          "type": "string"
-        },
         {
           "name": "election_id",
           "type": "u64"
@@ -280,10 +241,7 @@
           "writable": true
         },
         {
-          "name": "election"
-        },
-        {
-          "name": "candidate_account",
+          "name": "election",
           "writable": true
         },
         {
@@ -294,25 +252,12 @@
       "args": [
         {
           "name": "candidate",
-          "type": "pubkey"
+          "type": "u64"
         }
       ]
     }
   ],
   "accounts": [
-    {
-      "name": "Candidate",
-      "discriminator": [
-        86,
-        69,
-        250,
-        96,
-        193,
-        10,
-        222,
-        123
-      ]
-    },
     {
       "name": "Election",
       "discriminator": [
@@ -375,33 +320,19 @@
       "code": 6006,
       "name": "NoCandidatesForResult",
       "msg": "0 candidates in election"
+    },
+    {
+      "code": 6007,
+      "name": "NotRegisteredForThisElection",
+      "msg": "Not Registered for this election"
+    },
+    {
+      "code": 6008,
+      "name": "CannotRegisterAgain",
+      "msg": "Cannot register again"
     }
   ],
   "types": [
-    {
-      "name": "Candidate",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "election",
-            "type": "pubkey"
-          },
-          {
-            "name": "candidate",
-            "type": "pubkey"
-          },
-          {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "vote_count",
-            "type": "i64"
-          }
-        ]
-      }
-    },
     {
       "name": "Election",
       "type": {
@@ -436,14 +367,24 @@
             "type": "i64"
           },
           {
-            "name": "candidate_list",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "Candidate"
-                }
-              }
-            }
+            "name": "candidate1",
+            "type": "pubkey"
+          },
+          {
+            "name": "candidate1_votes",
+            "type": "u64"
+          },
+          {
+            "name": "candidate2",
+            "type": "pubkey"
+          },
+          {
+            "name": "candidate2_votes",
+            "type": "u64"
+          },
+          {
+            "name": "winner",
+            "type": "pubkey"
           }
         ]
       }

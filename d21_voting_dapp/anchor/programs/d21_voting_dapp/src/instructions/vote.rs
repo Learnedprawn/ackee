@@ -2,30 +2,36 @@ use anchor_lang::prelude::*;
 
 use crate::{
     error::ElectionError,
-    state::{Candidate, Election, Voter},
+    state::{Election, Voter},
 };
 
-pub fn _vote(ctx: Context<VoteContext>, _candidate: Pubkey) -> Result<()> {
+pub fn _vote(ctx: Context<VoteContext>, candidate: u64) -> Result<()> {
+    let election_account = &mut ctx.accounts.election;
     require!(
-        ctx.accounts.election.start_date > Clock::get()?.unix_timestamp,
+        election_account.start_date > Clock::get()?.unix_timestamp,
         ElectionError::StartDateInThePast
     );
     require!(
-        ctx.accounts.election.end_date > Clock::get()?.unix_timestamp,
+        election_account.end_date > Clock::get()?.unix_timestamp,
         ElectionError::VotingAfterEndDate
     );
     require!(
-        ctx.accounts.voter_account.election.key() == ctx.accounts.election.key(),
-        ElectionError::VotingAfterEndDate
+        ctx.accounts.voter_account.election.key() == election_account.key(),
+        ElectionError::NotRegisteredForThisElection
     );
 
-    ctx.accounts.candidate_account.vote_count += 1;
-
+    if 0 == candidate {
+        election_account.candidate1_votes += 1;
+    } else if 1 == candidate {
+        election_account.candidate2_votes += 1;
+    } else {
+        panic!("Candidate id not correct")
+    }
     Ok(())
 }
 
 #[derive(Accounts)]
-#[instruction(candidate: Pubkey)]
+// #[instruction(candidate: Pubkey)]
 pub struct VoteContext<'info> {
     #[account(mut)]
     pub voter: Signer<'info>,
@@ -36,10 +42,10 @@ pub struct VoteContext<'info> {
         // bump
     )]
     pub voter_account: Account<'info, Voter>,
-    #[account()]
-    pub election: Account<'info, Election>,
     #[account(mut)]
-    pub candidate_account: Account<'info, Candidate>,
+    pub election: Account<'info, Election>,
+    // #[account(mut)]
+    // pub candidate_account: Account<'info, Candidate>,
     // #[account(
     //     // seeds = [b"candidate", election.key().as_ref(), candidate.key().as_ref(), candidate.key().as_ref()],
     //     // seeds = [b"candidate", election.key().as_ref(), voter.key().as_ref(), candidate.key().as_ref()],

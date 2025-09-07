@@ -1,4 +1,3 @@
-use crate::state::Candidate;
 use anchor_lang::prelude::*;
 declare_id!("AjYHbu4pMAkeDHSzAXo2bTgr41PpmdxfW3SNnStNt3oz");
 
@@ -34,15 +33,15 @@ pub mod d21_voting_dapp {
             end_date,
         )
     }
-    pub fn vote(ctx: Context<VoteContext>, candidate: Pubkey) -> Result<()> {
+    pub fn vote(ctx: Context<VoteContext>, candidate: u64) -> Result<()> {
         _vote(ctx, candidate)
     }
     pub fn initialize_candidate(
         ctx: Context<CandidateContext>,
-        candidate_name: String,
+        // candidate_name: String,
         election_id: u64,
     ) -> Result<()> {
-        _initialize_candidate(ctx, candidate_name, election_id)
+        _initialize_candidate(ctx, election_id)
     }
     pub fn initialize_voter(
         ctx: Context<VoterContext>,
@@ -51,10 +50,7 @@ pub mod d21_voting_dapp {
     ) -> Result<()> {
         _initialize_voter(ctx, election_id, voter_name)
     }
-    pub fn calculate_result(
-        ctx: Context<ElectionResultContext>,
-        election_id: u64,
-    ) -> Result<Candidate> {
+    pub fn calculate_result(ctx: Context<ElectionResultContext>, election_id: u64) -> Result<()> {
         _calculate_result(ctx, election_id)
     }
 }

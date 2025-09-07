@@ -1,20 +1,14 @@
 use anchor_lang::prelude::*;
 
-use crate::{
-    error::ElectionError,
-    state::{Candidate, Election},
-};
+use crate::{error::ElectionError, state::Election};
 
-pub fn _calculate_result(
-    ctx: Context<ElectionResultContext>,
-    _election_id: u64,
-) -> Result<Candidate> {
+pub fn _calculate_result(ctx: Context<ElectionResultContext>, _election_id: u64) -> Result<()> {
     let election_account = &mut ctx.accounts.election;
-    // if election_account.candidate1_votes > election_account.candidate2_votes {
-    //     election_account.winner = election_account.candidate1;
-    // } else {
-    //     election_account.winner = election_account.candidate2;
-    // }
+    if election_account.candidate1_votes > election_account.candidate2_votes {
+        election_account.winner = election_account.candidate1;
+    } else {
+        election_account.winner = election_account.candidate2;
+    }
     // let mut winner: Candidate = Candidate {
     //     election: (,
     //     candidate: (),
@@ -26,13 +20,13 @@ pub fn _calculate_result(
     //         winner = candidate.clone();
     //     }
     // }
-    let winner = election_account
-        .candidate_list
-        .iter()
-        .max_by_key(|candidate| candidate.vote_count)
-        .cloned()
-        .ok_or(ElectionError::NoCandidatesForResult);
-    Ok(winner.unwrap())
+    // let winner = election_account
+    //     .candidate_list
+    //     .iter()
+    //     .max_by_key(|candidate| candidate.vote_count)
+    //     .cloned()
+    //     .ok_or(ElectionError::NoCandidatesForResult);
+    Ok(())
 }
 
 #[derive(Accounts)]

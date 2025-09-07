@@ -45,12 +45,7 @@ export type D21VotingDapp = {
           "name": "electionId",
           "type": "u64"
         }
-      ],
-      "returns": {
-        "defined": {
-          "name": "candidate"
-        }
-      }
+      ]
     },
     {
       "name": "initializeCandidate",
@@ -75,45 +70,11 @@ export type D21VotingDapp = {
           "writable": true
         },
         {
-          "name": "candidateAccount",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  97,
-                  110,
-                  100,
-                  105,
-                  100,
-                  97,
-                  116,
-                  101
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "election"
-              },
-              {
-                "kind": "account",
-                "path": "candidate"
-              }
-            ]
-          }
-        },
-        {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
-        {
-          "name": "candidateName",
-          "type": "string"
-        },
         {
           "name": "electionId",
           "type": "u64"
@@ -286,10 +247,7 @@ export type D21VotingDapp = {
           "writable": true
         },
         {
-          "name": "election"
-        },
-        {
-          "name": "candidateAccount",
+          "name": "election",
           "writable": true
         },
         {
@@ -300,25 +258,12 @@ export type D21VotingDapp = {
       "args": [
         {
           "name": "candidate",
-          "type": "pubkey"
+          "type": "u64"
         }
       ]
     }
   ],
   "accounts": [
-    {
-      "name": "candidate",
-      "discriminator": [
-        86,
-        69,
-        250,
-        96,
-        193,
-        10,
-        222,
-        123
-      ]
-    },
     {
       "name": "election",
       "discriminator": [
@@ -381,33 +326,19 @@ export type D21VotingDapp = {
       "code": 6006,
       "name": "noCandidatesForResult",
       "msg": "0 candidates in election"
+    },
+    {
+      "code": 6007,
+      "name": "notRegisteredForThisElection",
+      "msg": "Not Registered for this election"
+    },
+    {
+      "code": 6008,
+      "name": "cannotRegisterAgain",
+      "msg": "Cannot register again"
     }
   ],
   "types": [
-    {
-      "name": "candidate",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "election",
-            "type": "pubkey"
-          },
-          {
-            "name": "candidate",
-            "type": "pubkey"
-          },
-          {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "voteCount",
-            "type": "i64"
-          }
-        ]
-      }
-    },
     {
       "name": "election",
       "type": {
@@ -442,14 +373,24 @@ export type D21VotingDapp = {
             "type": "i64"
           },
           {
-            "name": "candidateList",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "candidate"
-                }
-              }
-            }
+            "name": "candidate1",
+            "type": "pubkey"
+          },
+          {
+            "name": "candidate1Votes",
+            "type": "u64"
+          },
+          {
+            "name": "candidate2",
+            "type": "pubkey"
+          },
+          {
+            "name": "candidate2Votes",
+            "type": "u64"
+          },
+          {
+            "name": "winner",
+            "type": "pubkey"
           }
         ]
       }
