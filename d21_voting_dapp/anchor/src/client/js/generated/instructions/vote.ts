@@ -10,12 +10,12 @@ import {
   combineCodec,
   fixDecoderSize,
   fixEncoderSize,
-  getAddressDecoder,
-  getAddressEncoder,
   getBytesDecoder,
   getBytesEncoder,
   getStructDecoder,
   getStructEncoder,
+  getU64Decoder,
+  getU64Encoder,
   transformEncoder,
   type AccountMeta,
   type AccountSignerMeta,
@@ -48,7 +48,6 @@ export type VoteInstruction<
   TAccountVoter extends string | AccountMeta<string> = string,
   TAccountVoterAccount extends string | AccountMeta<string> = string,
   TAccountElection extends string | AccountMeta<string> = string,
-  TAccountCandidateAccount extends string | AccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
     | AccountMeta<string> = '11111111111111111111111111111111',
@@ -65,11 +64,8 @@ export type VoteInstruction<
         ? WritableAccount<TAccountVoterAccount>
         : TAccountVoterAccount,
       TAccountElection extends string
-        ? ReadonlyAccount<TAccountElection>
+        ? WritableAccount<TAccountElection>
         : TAccountElection,
-      TAccountCandidateAccount extends string
-        ? WritableAccount<TAccountCandidateAccount>
-        : TAccountCandidateAccount,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
@@ -79,16 +75,16 @@ export type VoteInstruction<
 
 export type VoteInstructionData = {
   discriminator: ReadonlyUint8Array;
-  candidate: Address;
+  candidate: bigint;
 };
 
-export type VoteInstructionDataArgs = { candidate: Address };
+export type VoteInstructionDataArgs = { candidate: number | bigint };
 
 export function getVoteInstructionDataEncoder(): FixedSizeEncoder<VoteInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['candidate', getAddressEncoder()],
+      ['candidate', getU64Encoder()],
     ]),
     (value) => ({ ...value, discriminator: VOTE_DISCRIMINATOR })
   );
@@ -97,7 +93,7 @@ export function getVoteInstructionDataEncoder(): FixedSizeEncoder<VoteInstructio
 export function getVoteInstructionDataDecoder(): FixedSizeDecoder<VoteInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['candidate', getAddressDecoder()],
+    ['candidate', getU64Decoder()],
   ]);
 }
 
@@ -115,13 +111,11 @@ export type VoteInput<
   TAccountVoter extends string = string,
   TAccountVoterAccount extends string = string,
   TAccountElection extends string = string,
-  TAccountCandidateAccount extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
   voter: TransactionSigner<TAccountVoter>;
   voterAccount: Address<TAccountVoterAccount>;
   election: Address<TAccountElection>;
-  candidateAccount: Address<TAccountCandidateAccount>;
   systemProgram?: Address<TAccountSystemProgram>;
   candidate: VoteInstructionDataArgs['candidate'];
 };
@@ -130,7 +124,6 @@ export function getVoteInstruction<
   TAccountVoter extends string,
   TAccountVoterAccount extends string,
   TAccountElection extends string,
-  TAccountCandidateAccount extends string,
   TAccountSystemProgram extends string,
   TProgramAddress extends Address = typeof D21_VOTING_DAPP_PROGRAM_ADDRESS,
 >(
@@ -138,7 +131,6 @@ export function getVoteInstruction<
     TAccountVoter,
     TAccountVoterAccount,
     TAccountElection,
-    TAccountCandidateAccount,
     TAccountSystemProgram
   >,
   config?: { programAddress?: TProgramAddress }
@@ -147,7 +139,6 @@ export function getVoteInstruction<
   TAccountVoter,
   TAccountVoterAccount,
   TAccountElection,
-  TAccountCandidateAccount,
   TAccountSystemProgram
 > {
   // Program address.
@@ -158,11 +149,7 @@ export function getVoteInstruction<
   const originalAccounts = {
     voter: { value: input.voter ?? null, isWritable: true },
     voterAccount: { value: input.voterAccount ?? null, isWritable: true },
-    election: { value: input.election ?? null, isWritable: false },
-    candidateAccount: {
-      value: input.candidateAccount ?? null,
-      isWritable: true,
-    },
+    election: { value: input.election ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
@@ -185,7 +172,6 @@ export function getVoteInstruction<
       getAccountMeta(accounts.voter),
       getAccountMeta(accounts.voterAccount),
       getAccountMeta(accounts.election),
-      getAccountMeta(accounts.candidateAccount),
       getAccountMeta(accounts.systemProgram),
     ],
     programAddress,
@@ -197,7 +183,6 @@ export function getVoteInstruction<
     TAccountVoter,
     TAccountVoterAccount,
     TAccountElection,
-    TAccountCandidateAccount,
     TAccountSystemProgram
   >;
 
@@ -213,8 +198,7 @@ export type ParsedVoteInstruction<
     voter: TAccountMetas[0];
     voterAccount: TAccountMetas[1];
     election: TAccountMetas[2];
-    candidateAccount: TAccountMetas[3];
-    systemProgram: TAccountMetas[4];
+    systemProgram: TAccountMetas[3];
   };
   data: VoteInstructionData;
 };
@@ -227,7 +211,7 @@ export function parseVoteInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedVoteInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 5) {
+  if (instruction.accounts.length < 4) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -243,7 +227,6 @@ export function parseVoteInstruction<
       voter: getNextAccount(),
       voterAccount: getNextAccount(),
       election: getNextAccount(),
-      candidateAccount: getNextAccount(),
       systemProgram: getNextAccount(),
     },
     data: getVoteInstructionDataDecoder().decode(instruction.data),

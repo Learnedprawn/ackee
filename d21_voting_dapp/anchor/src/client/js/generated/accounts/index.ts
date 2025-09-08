@@ -6,6 +6,5 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './candidate';
 export * from './election';
 export * from './voter';

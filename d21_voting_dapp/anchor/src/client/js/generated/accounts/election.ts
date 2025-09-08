@@ -19,8 +19,6 @@ import {
   fixEncoderSize,
   getAddressDecoder,
   getAddressEncoder,
-  getArrayDecoder,
-  getArrayEncoder,
   getBytesDecoder,
   getBytesEncoder,
   getI64Decoder,
@@ -46,12 +44,6 @@ import {
   type MaybeEncodedAccount,
   type ReadonlyUint8Array,
 } from 'gill';
-import {
-  getCandidateDecoder,
-  getCandidateEncoder,
-  type Candidate,
-  type CandidateArgs,
-} from '../types';
 
 export const ELECTION_DISCRIMINATOR = new Uint8Array([
   68, 191, 164, 85, 35, 105, 152, 202,
@@ -70,7 +62,10 @@ export type Election = {
   electionOrganizer: Address;
   startDate: bigint;
   endDate: bigint;
-  candidateList: Array<Candidate>;
+  candidate1: Address;
+  candidate1Votes: bigint;
+  candidate2: Address;
+  candidate2Votes: bigint;
   winner: Address;
 };
 
@@ -82,7 +77,10 @@ export type ElectionArgs = {
   electionOrganizer: Address;
   startDate: number | bigint;
   endDate: number | bigint;
-  candidateList: Array<CandidateArgs>;
+  candidate1: Address;
+  candidate1Votes: number | bigint;
+  candidate2: Address;
+  candidate2Votes: number | bigint;
   winner: Address;
 };
 
@@ -100,7 +98,10 @@ export function getElectionEncoder(): Encoder<ElectionArgs> {
       ['electionOrganizer', getAddressEncoder()],
       ['startDate', getI64Encoder()],
       ['endDate', getI64Encoder()],
-      ['candidateList', getArrayEncoder(getCandidateEncoder())],
+      ['candidate1', getAddressEncoder()],
+      ['candidate1Votes', getU64Encoder()],
+      ['candidate2', getAddressEncoder()],
+      ['candidate2Votes', getU64Encoder()],
       ['winner', getAddressEncoder()],
     ]),
     (value) => ({ ...value, discriminator: ELECTION_DISCRIMINATOR })
@@ -120,7 +121,10 @@ export function getElectionDecoder(): Decoder<Election> {
     ['electionOrganizer', getAddressDecoder()],
     ['startDate', getI64Decoder()],
     ['endDate', getI64Decoder()],
-    ['candidateList', getArrayDecoder(getCandidateDecoder())],
+    ['candidate1', getAddressDecoder()],
+    ['candidate1Votes', getU64Decoder()],
+    ['candidate2', getAddressDecoder()],
+    ['candidate2Votes', getU64Decoder()],
     ['winner', getAddressDecoder()],
   ]);
 }

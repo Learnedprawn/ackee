@@ -7,30 +7,22 @@
  */
 
 import {
-  addDecoderSizePrefix,
-  addEncoderSizePrefix,
   combineCodec,
   fixDecoderSize,
   fixEncoderSize,
-  getAddressEncoder,
   getBytesDecoder,
   getBytesEncoder,
-  getProgramDerivedAddress,
   getStructDecoder,
   getStructEncoder,
-  getU32Decoder,
-  getU32Encoder,
   getU64Decoder,
   getU64Encoder,
-  getUtf8Decoder,
-  getUtf8Encoder,
   transformEncoder,
   type AccountMeta,
   type AccountSignerMeta,
   type Address,
-  type Codec,
-  type Decoder,
-  type Encoder,
+  type FixedSizeCodec,
+  type FixedSizeDecoder,
+  type FixedSizeEncoder,
   type Instruction,
   type InstructionWithAccounts,
   type InstructionWithData,
@@ -41,11 +33,7 @@ import {
   type WritableSignerAccount,
 } from 'gill';
 import { D21_VOTING_DAPP_PROGRAM_ADDRESS } from '../programs';
-import {
-  expectAddress,
-  getAccountMetaFactory,
-  type ResolvedAccount,
-} from '../shared';
+import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
 export const INITIALIZE_CANDIDATE_DISCRIMINATOR = new Uint8Array([
   210, 107, 118, 204, 255, 97, 112, 26,
@@ -61,7 +49,6 @@ export type InitializeCandidateInstruction<
   TProgram extends string = typeof D21_VOTING_DAPP_PROGRAM_ADDRESS,
   TAccountCandidate extends string | AccountMeta<string> = string,
   TAccountElection extends string | AccountMeta<string> = string,
-  TAccountCandidateAccount extends string | AccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
     | AccountMeta<string> = '11111111111111111111111111111111',
@@ -77,9 +64,6 @@ export type InitializeCandidateInstruction<
       TAccountElection extends string
         ? WritableAccount<TAccountElection>
         : TAccountElection,
-      TAccountCandidateAccount extends string
-        ? WritableAccount<TAccountCandidateAccount>
-        : TAccountCandidateAccount,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
@@ -89,38 +73,31 @@ export type InitializeCandidateInstruction<
 
 export type InitializeCandidateInstructionData = {
   discriminator: ReadonlyUint8Array;
-  candidateName: string;
   electionId: bigint;
 };
 
 export type InitializeCandidateInstructionDataArgs = {
-  candidateName: string;
   electionId: number | bigint;
 };
 
-export function getInitializeCandidateInstructionDataEncoder(): Encoder<InitializeCandidateInstructionDataArgs> {
+export function getInitializeCandidateInstructionDataEncoder(): FixedSizeEncoder<InitializeCandidateInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      [
-        'candidateName',
-        addEncoderSizePrefix(getUtf8Encoder(), getU32Encoder()),
-      ],
       ['electionId', getU64Encoder()],
     ]),
     (value) => ({ ...value, discriminator: INITIALIZE_CANDIDATE_DISCRIMINATOR })
   );
 }
 
-export function getInitializeCandidateInstructionDataDecoder(): Decoder<InitializeCandidateInstructionData> {
+export function getInitializeCandidateInstructionDataDecoder(): FixedSizeDecoder<InitializeCandidateInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['candidateName', addDecoderSizePrefix(getUtf8Decoder(), getU32Decoder())],
     ['electionId', getU64Decoder()],
   ]);
 }
 
-export function getInitializeCandidateInstructionDataCodec(): Codec<
+export function getInitializeCandidateInstructionDataCodec(): FixedSizeCodec<
   InitializeCandidateInstructionDataArgs,
   InitializeCandidateInstructionData
 > {
@@ -130,131 +107,26 @@ export function getInitializeCandidateInstructionDataCodec(): Codec<
   );
 }
 
-export type InitializeCandidateAsyncInput<
-  TAccountCandidate extends string = string,
-  TAccountElection extends string = string,
-  TAccountCandidateAccount extends string = string,
-  TAccountSystemProgram extends string = string,
-> = {
-  candidate: TransactionSigner<TAccountCandidate>;
-  election: Address<TAccountElection>;
-  candidateAccount?: Address<TAccountCandidateAccount>;
-  systemProgram?: Address<TAccountSystemProgram>;
-  candidateName: InitializeCandidateInstructionDataArgs['candidateName'];
-  electionId: InitializeCandidateInstructionDataArgs['electionId'];
-};
-
-export async function getInitializeCandidateInstructionAsync<
-  TAccountCandidate extends string,
-  TAccountElection extends string,
-  TAccountCandidateAccount extends string,
-  TAccountSystemProgram extends string,
-  TProgramAddress extends Address = typeof D21_VOTING_DAPP_PROGRAM_ADDRESS,
->(
-  input: InitializeCandidateAsyncInput<
-    TAccountCandidate,
-    TAccountElection,
-    TAccountCandidateAccount,
-    TAccountSystemProgram
-  >,
-  config?: { programAddress?: TProgramAddress }
-): Promise<
-  InitializeCandidateInstruction<
-    TProgramAddress,
-    TAccountCandidate,
-    TAccountElection,
-    TAccountCandidateAccount,
-    TAccountSystemProgram
-  >
-> {
-  // Program address.
-  const programAddress =
-    config?.programAddress ?? D21_VOTING_DAPP_PROGRAM_ADDRESS;
-
-  // Original accounts.
-  const originalAccounts = {
-    candidate: { value: input.candidate ?? null, isWritable: true },
-    election: { value: input.election ?? null, isWritable: true },
-    candidateAccount: {
-      value: input.candidateAccount ?? null,
-      isWritable: true,
-    },
-    systemProgram: { value: input.systemProgram ?? null, isWritable: false },
-  };
-  const accounts = originalAccounts as Record<
-    keyof typeof originalAccounts,
-    ResolvedAccount
-  >;
-
-  // Original args.
-  const args = { ...input };
-
-  // Resolve default values.
-  if (!accounts.candidateAccount.value) {
-    accounts.candidateAccount.value = await getProgramDerivedAddress({
-      programAddress,
-      seeds: [
-        getBytesEncoder().encode(
-          new Uint8Array([99, 97, 110, 100, 105, 100, 97, 116, 101])
-        ),
-        getAddressEncoder().encode(expectAddress(accounts.election.value)),
-        getAddressEncoder().encode(expectAddress(accounts.candidate.value)),
-      ],
-    });
-  }
-  if (!accounts.systemProgram.value) {
-    accounts.systemProgram.value =
-      '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
-  }
-
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
-  const instruction = {
-    accounts: [
-      getAccountMeta(accounts.candidate),
-      getAccountMeta(accounts.election),
-      getAccountMeta(accounts.candidateAccount),
-      getAccountMeta(accounts.systemProgram),
-    ],
-    programAddress,
-    data: getInitializeCandidateInstructionDataEncoder().encode(
-      args as InitializeCandidateInstructionDataArgs
-    ),
-  } as InitializeCandidateInstruction<
-    TProgramAddress,
-    TAccountCandidate,
-    TAccountElection,
-    TAccountCandidateAccount,
-    TAccountSystemProgram
-  >;
-
-  return instruction;
-}
-
 export type InitializeCandidateInput<
   TAccountCandidate extends string = string,
   TAccountElection extends string = string,
-  TAccountCandidateAccount extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
   candidate: TransactionSigner<TAccountCandidate>;
   election: Address<TAccountElection>;
-  candidateAccount: Address<TAccountCandidateAccount>;
   systemProgram?: Address<TAccountSystemProgram>;
-  candidateName: InitializeCandidateInstructionDataArgs['candidateName'];
   electionId: InitializeCandidateInstructionDataArgs['electionId'];
 };
 
 export function getInitializeCandidateInstruction<
   TAccountCandidate extends string,
   TAccountElection extends string,
-  TAccountCandidateAccount extends string,
   TAccountSystemProgram extends string,
   TProgramAddress extends Address = typeof D21_VOTING_DAPP_PROGRAM_ADDRESS,
 >(
   input: InitializeCandidateInput<
     TAccountCandidate,
     TAccountElection,
-    TAccountCandidateAccount,
     TAccountSystemProgram
   >,
   config?: { programAddress?: TProgramAddress }
@@ -262,7 +134,6 @@ export function getInitializeCandidateInstruction<
   TProgramAddress,
   TAccountCandidate,
   TAccountElection,
-  TAccountCandidateAccount,
   TAccountSystemProgram
 > {
   // Program address.
@@ -273,10 +144,6 @@ export function getInitializeCandidateInstruction<
   const originalAccounts = {
     candidate: { value: input.candidate ?? null, isWritable: true },
     election: { value: input.election ?? null, isWritable: true },
-    candidateAccount: {
-      value: input.candidateAccount ?? null,
-      isWritable: true,
-    },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
@@ -298,7 +165,6 @@ export function getInitializeCandidateInstruction<
     accounts: [
       getAccountMeta(accounts.candidate),
       getAccountMeta(accounts.election),
-      getAccountMeta(accounts.candidateAccount),
       getAccountMeta(accounts.systemProgram),
     ],
     programAddress,
@@ -309,7 +175,6 @@ export function getInitializeCandidateInstruction<
     TProgramAddress,
     TAccountCandidate,
     TAccountElection,
-    TAccountCandidateAccount,
     TAccountSystemProgram
   >;
 
@@ -324,8 +189,7 @@ export type ParsedInitializeCandidateInstruction<
   accounts: {
     candidate: TAccountMetas[0];
     election: TAccountMetas[1];
-    candidateAccount: TAccountMetas[2];
-    systemProgram: TAccountMetas[3];
+    systemProgram: TAccountMetas[2];
   };
   data: InitializeCandidateInstructionData;
 };
@@ -338,7 +202,7 @@ export function parseInitializeCandidateInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedInitializeCandidateInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 4) {
+  if (instruction.accounts.length < 3) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -353,7 +217,6 @@ export function parseInitializeCandidateInstruction<
     accounts: {
       candidate: getNextAccount(),
       election: getNextAccount(),
-      candidateAccount: getNextAccount(),
       systemProgram: getNextAccount(),
     },
     data: getInitializeCandidateInstructionDataDecoder().decode(

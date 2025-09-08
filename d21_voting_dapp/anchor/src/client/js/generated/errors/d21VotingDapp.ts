@@ -28,12 +28,18 @@ export const D21_VOTING_DAPP_ERROR__VOTING_AFTER_END_DATE = 0x1774; // 6004
 export const D21_VOTING_DAPP_ERROR__REGISTRATION_AFTER_END_DATE = 0x1775; // 6005
 /** NoCandidatesForResult: 0 candidates in election */
 export const D21_VOTING_DAPP_ERROR__NO_CANDIDATES_FOR_RESULT = 0x1776; // 6006
+/** NotRegisteredForThisElection: Not Registered for this election */
+export const D21_VOTING_DAPP_ERROR__NOT_REGISTERED_FOR_THIS_ELECTION = 0x1777; // 6007
+/** CannotRegisterAgain: Cannot register again */
+export const D21_VOTING_DAPP_ERROR__CANNOT_REGISTER_AGAIN = 0x1778; // 6008
 
 export type D21VotingDappError =
+  | typeof D21_VOTING_DAPP_ERROR__CANNOT_REGISTER_AGAIN
   | typeof D21_VOTING_DAPP_ERROR__DESCIPTION_TOO_LONG
   | typeof D21_VOTING_DAPP_ERROR__END_DATE_AFTER_START
   | typeof D21_VOTING_DAPP_ERROR__NAME_TOO_LONG
   | typeof D21_VOTING_DAPP_ERROR__NO_CANDIDATES_FOR_RESULT
+  | typeof D21_VOTING_DAPP_ERROR__NOT_REGISTERED_FOR_THIS_ELECTION
   | typeof D21_VOTING_DAPP_ERROR__REGISTRATION_AFTER_END_DATE
   | typeof D21_VOTING_DAPP_ERROR__START_DATE_IN_THE_PAST
   | typeof D21_VOTING_DAPP_ERROR__VOTING_AFTER_END_DATE;
@@ -41,10 +47,12 @@ export type D21VotingDappError =
 let d21VotingDappErrorMessages: Record<D21VotingDappError, string> | undefined;
 if (process.env.NODE_ENV !== 'production') {
   d21VotingDappErrorMessages = {
+    [D21_VOTING_DAPP_ERROR__CANNOT_REGISTER_AGAIN]: `Cannot register again`,
     [D21_VOTING_DAPP_ERROR__DESCIPTION_TOO_LONG]: `Desciption should be less than 20`,
     [D21_VOTING_DAPP_ERROR__END_DATE_AFTER_START]: `End Date after Start Date`,
     [D21_VOTING_DAPP_ERROR__NAME_TOO_LONG]: `Name should be less than 20`,
     [D21_VOTING_DAPP_ERROR__NO_CANDIDATES_FOR_RESULT]: `0 candidates in election`,
+    [D21_VOTING_DAPP_ERROR__NOT_REGISTERED_FOR_THIS_ELECTION]: `Not Registered for this election`,
     [D21_VOTING_DAPP_ERROR__REGISTRATION_AFTER_END_DATE]: `Can't register after end date`,
     [D21_VOTING_DAPP_ERROR__START_DATE_IN_THE_PAST]: `Start Date should be in future`,
     [D21_VOTING_DAPP_ERROR__VOTING_AFTER_END_DATE]: `End Date crossed`,

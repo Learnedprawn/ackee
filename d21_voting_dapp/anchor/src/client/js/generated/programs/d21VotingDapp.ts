@@ -25,7 +25,6 @@ export const D21_VOTING_DAPP_PROGRAM_ADDRESS =
   'AjYHbu4pMAkeDHSzAXo2bTgr41PpmdxfW3SNnStNt3oz' as Address<'AjYHbu4pMAkeDHSzAXo2bTgr41PpmdxfW3SNnStNt3oz'>;
 
 export enum D21VotingDappAccount {
-  Candidate,
   Election,
   Voter,
 }
@@ -34,17 +33,6 @@ export function identifyD21VotingDappAccount(
   account: { data: ReadonlyUint8Array } | ReadonlyUint8Array
 ): D21VotingDappAccount {
   const data = 'data' in account ? account.data : account;
-  if (
-    containsBytes(
-      data,
-      fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([86, 69, 250, 96, 193, 10, 222, 123])
-      ),
-      0
-    )
-  ) {
-    return D21VotingDappAccount.Candidate;
-  }
   if (
     containsBytes(
       data,
