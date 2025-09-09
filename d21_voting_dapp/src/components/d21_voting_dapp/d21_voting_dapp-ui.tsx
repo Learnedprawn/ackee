@@ -34,7 +34,6 @@ export default function CreateElection() {
 
   const handleSubmit = (e: any) => {
     e.preventDefault()
-    // Dummy function for creating election
     console.log('Creating ellection:', formData)
     alert('Election created successfully!')
     setFormData({
