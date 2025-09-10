@@ -1,15 +1,15 @@
-import { ellipsify } from '@wallet-ui/react'
+import { ellipsify, useWalletUi, useWalletUiSigner } from '@wallet-ui/react'
 import { Button } from '@/components/ui/button'
 import { ExplorerLink } from '@/components/cluster/cluster-ui'
 import { useD21VotingDappProgramId, useGetProgramAccountQuery } from './d21_voting_dapp-data-access'
+import { useState } from 'react'
+import { getInitializeElectionInstructionAsync } from '@project/anchor'
 
 export function D21VotingDappProgramExplorerLink() {
   const programId = useD21VotingDappProgramId()
 
   return <ExplorerLink address={programId.toString()} label={ellipsify(programId.toString())} />
 }
-
-export function CreateEvent() {}
 
 export function D21VotingDappProgram() {
   return (
@@ -21,27 +21,36 @@ export function D21VotingDappProgram() {
     </div>
   )
 }
-import { useState } from 'react'
 
 export default function CreateElection() {
+  const signer = useWalletUiSigner()
+  const client = useWalletUi().client
   const [formData, setFormData] = useState({
-    election_name: '',
-    election_description: '',
-    election_fee: '',
-    start_date: '',
-    end_date: '',
+    electionName: '',
+    electionDescription: '',
+    electionFee: '',
+    startDate: '',
+    endDate: '',
   })
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault()
     console.log('Creating ellection:', formData)
     alert('Election created successfully!')
     setFormData({
-      election_name: '',
-      election_description: '',
-      election_fee: '',
-      start_date: '',
-      end_date: '',
+      electionName: '',
+      electionDescription: '',
+      electionFee: '',
+      startDate: '',
+      endDate: '',
+    })
+    const ix = await getInitializeElectionInstructionAsync({
+      electionOrganizer: signer,
+      electionName: formData.electionName,
+      electionDescription: formData.electionDescription,
+      electionFee: BigInt(formData.electionFee),
+      startDate: BigInt(formData.startDate),
+      endDate: BigInt(formData.endDate),
     })
   }
 

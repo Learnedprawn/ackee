@@ -6,19 +6,19 @@ import { useWalletUi } from '@wallet-ui/react'
 import { toastTx } from '@/components/toast-tx'
 import { useWalletTransactionSignAndSend } from '@/components/solana/use-wallet-transaction-sign-and-send'
 import { useWalletUiSigner } from '@/components/solana/use-wallet-ui-signer'
+import { createTransaction, Instruction, SolanaClient, TransactionSigner } from 'gill'
 
 export function useD21VotingDappProgramId() {
-    const { cluster } = useWalletUi()
+  const { cluster } = useWalletUi()
 
-    return useMemo(() => getD21VotingDappProgramId(cluster.id), [cluster])
+  return useMemo(() => getD21VotingDappProgramId(cluster.id), [cluster])
 }
 
-export function useGetProgramAccountQuery() {
-    const { client, cluster } = useWalletUi()
+export async function processTransaction(signer: TransactionSigner, client: SolanaClient, instructions: Instruction[]) {
+  const { value: latestBlockhash } = await client.rpc.getLatestBlockhash().send()
 
-    return useQuery({
-        queryKey: ['get-program-account', { cluster }],
-        queryFn: () => client.rpc.getAccountInfo(getD21VotingDappProgramId(cluster.id)).send(),
-    })
+  // const transaction = createTransaction(
+  //     latestBlockhash,
+  //
+  // )
 }
-
