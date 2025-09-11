@@ -1,7 +1,7 @@
 import { ellipsify, useWalletUi, useWalletUiSigner } from '@wallet-ui/react'
 import { Button } from '@/components/ui/button'
 import { ExplorerLink } from '@/components/cluster/cluster-ui'
-import { useD21VotingDappProgramId, useGetProgramAccountQuery } from './d21_voting_dapp-data-access'
+import { useD21VotingDappProgramId, processTransaction } from './d21_voting_dapp-data-access'
 import { useState } from 'react'
 import { getInitializeElectionInstructionAsync } from '@project/anchor'
 
@@ -35,7 +35,20 @@ export default function CreateElection() {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault()
-    console.log('Creating ellection:', formData)
+    const startDateSeconds = Math.round(new Date(formData.startDate).getTime() / 1000)
+    const endDateSeconds = Math.round(new Date(formData.endDate).getTime() / 1000)
+    console.log('Creating election:', formData)
+    const ix = await getInitializeElectionInstructionAsync({
+      electionOrganizer: signer,
+      electionName: formData.electionName,
+      electionId: BigInt(1),
+      electionDescription: formData.electionDescription,
+      // electionFee: BigInt(formData.electionFee),
+      electionFee: BigInt(1),
+      startDate: BigInt(startDateSeconds),
+      endDate: BigInt(endDateSeconds),
+    })
+    await processTransaction(signer, client, [ix])
     alert('Election created successfully!')
     setFormData({
       electionName: '',
@@ -43,14 +56,6 @@ export default function CreateElection() {
       electionFee: '',
       startDate: '',
       endDate: '',
-    })
-    const ix = await getInitializeElectionInstructionAsync({
-      electionOrganizer: signer,
-      electionName: formData.electionName,
-      electionDescription: formData.electionDescription,
-      electionFee: BigInt(formData.electionFee),
-      startDate: BigInt(formData.startDate),
-      endDate: BigInt(formData.endDate),
     })
   }
 
@@ -74,8 +79,9 @@ export default function CreateElection() {
             <label className="block text-sm font-medium text-gray-300 mb-2">Election Name</label>
             <input
               type="text"
-              name="election_name"
-              value={formData.election_name}
+              name="electionName"
+              // value={formData.electionName}
+              defaultValue={formData.electionName}
               onChange={handleChange}
               required
               className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -86,8 +92,9 @@ export default function CreateElection() {
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
             <textarea
-              name="election_description"
-              value={formData.election_description}
+              name="electionDescription"
+              // value={formData.electionDescription}
+              defaultValue={formData.electionDescription}
               onChange={handleChange}
               required
               rows={4}
@@ -100,8 +107,9 @@ export default function CreateElection() {
             <label className="block text-sm font-medium text-gray-300 mb-2">Election Fee (SOL)</label>
             <input
               type="number"
-              name="election_fee"
-              value={formData.election_fee}
+              name="electionFee"
+              // value={formData.electionFee}
+              defaultValue={formData.electionFee}
               onChange={handleChange}
               required
               step="0.001"
@@ -115,8 +123,9 @@ export default function CreateElection() {
               <label className="block text-sm font-medium text-gray-300 mb-2">Start Date</label>
               <input
                 type="datetime-local"
-                name="start_date"
-                value={formData.start_date}
+                name="startDate"
+                // value={formData.startDate}
+                defaultValue={formData.startDate}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -127,8 +136,9 @@ export default function CreateElection() {
               <label className="block text-sm font-medium text-gray-300 mb-2">End Date</label>
               <input
                 type="datetime-local"
-                name="end_date"
-                value={formData.end_date}
+                name="endDate"
+                // value={formData.endDate}
+                defaultValue={formData.endDate}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
